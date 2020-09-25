@@ -17,12 +17,9 @@ app.get('/', (req, res) => {
 })
 
 app.get('/dashboard', verifyToken, (req, res) => {
-  // Verifies the JWT token
   jwt.verify(req.token, 'the_secret_key', err => {
-    // if error, send 401
     if (err) {
       res.sendStatus(401)
-      // if success, send events.
     } else {
       res.json({
         events: events
@@ -39,12 +36,25 @@ app.post('/register', (req, res) => {
       password: req.body.password
       // In a production app, you'll want to encrypt the password
     }
-
     const data = JSON.stringify(user, null, 2)
-    var dbUserEmail = require('./db/user.json').email
 
-    if (dbUserEmail === req.body.email) {
-      res.sendStatus(400)
+    var dbUserEmail = require('./db/user.json').email
+    // Array to collect errors
+    var errorsToSend = []
+
+    // Does email already exist in db
+    if (dbUserEmail === user.email) {
+      errorsToSend.push('An account with this email already exists.')
+    }
+    // Validate password length
+    if (user.password.length < 5) {
+      errorsToSend.push('Password too short.')
+    }
+    // If there are errors, send them back
+    if (errorsToSend.length > 0) {
+      res.status(400).json({
+        errors: errorsToSend
+      })
     } else {
       fs.writeFile('./db/user.json', data, err => {
         if (err) {
@@ -68,8 +78,10 @@ app.post('/register', (req, res) => {
 })
 
 app.post('/login', (req, res) => {
+  // reading database
   const userDB = fs.readFileSync('./db/user.json')
   const userInfo = JSON.parse(userDB)
+  // Check if user credentials exists in db
   if (
     req.body &&
     req.body.email === userInfo.email &&
@@ -84,8 +96,11 @@ app.post('/login', (req, res) => {
       email: userInfo.email,
       name: userInfo.name
     })
+    // Send error if credentials don't match
   } else {
-    res.sendStatus(400)
+    res.status(401).json({
+      error: 'Invalid login. Please try again.'
+    })
   }
 })
 
