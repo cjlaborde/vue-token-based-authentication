@@ -16,6 +16,20 @@ export default new Vuex.Store({
         localStorage.setItem('user', JSON.stringify(userData))
       // set the header
       axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`
+    },
+    // CLEAR_USER_DATA(state) {
+    //   // clear user state
+    //   state.user = null
+    //   // clear local storage
+    //   localStorage.removeItem('user')
+    //   axios.defaults.headers.common['Authorization'] = null
+    // }
+    CLEAR_USER_DATA(state) {
+      // clear local storage
+      localStorage.removeItem('user')
+      // Reloads the current page and force refresh and since vuex state and axios header settings
+      // will not survive the refresh
+      location.reload()
     }
   },
   actions: {
@@ -42,6 +56,11 @@ export default new Vuex.Store({
           commit('SET_USER_DATA', data)
           console.log('this is the data', data)
         })
+    },
+    logout({
+      commit
+    }) {
+      commit('CLEAR_USER_DATA')
     }
   },
   getters: {

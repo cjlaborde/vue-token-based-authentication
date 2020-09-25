@@ -18,7 +18,10 @@ const router = new Router({
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: Dashboard
+      component: Dashboard,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/register',
@@ -33,4 +36,40 @@ const router = new Router({
   ]
 })
 
+// router.beforeEach((to, from, next) => {
+//   // check if user logged in or not
+//   const loggedIn = localStorage.getItem('user')
+
+//   // redirects to homepage
+//   if (to.matched.some(record => record.meta.requiresAuth) && !loggedIn) {
+//     next('/')
+//   }
+//   // When the to route doesn't require authentication
+//   next()
+// })
+
+router.beforeEach((to, from, next) => {
+  const loggedIn = localStorage.getItem('user')
+
+  if (to.matched.some(record => record.meta.requiresAuth) && !loggedIn) {
+    next('/')
+  }
+  next()
+})
+
 export default router
+// // matched = give us an array of Records that match the "to" route
+// // some = determines whether the specified callback function returns true for any element of an array
+// if (to.matched.some(record => record.meta.requiresAuth)) {
+//   // if user not loggedIn redirect them to the homepage.
+//   if (!loggedIn) {
+//     next('/')
+//   } else {
+//     // if our route required auth and we do have loggin user
+//     // We will call next() to continue navigating to the "to" route
+//     next()
+//   }
+// } else {
+//   // When the to route doesn't require authentication
+//   next()
+// }
